@@ -22,4 +22,18 @@ public class ErrorResponse {
     private List<String> validationErrors;
 
 
+    public ErrorResponse(int status, String error, String message, String path, String traceId) {
+        this.timestamp = LocalDateTime.now();
+        this.status = status;
+        this.error = error;
+        this.message = message;
+        this.path = path;
+        this.traceId = traceId;
+    }
+
+    public ErrorResponse(int status, String error, String message, String path, String traceId, List<String> validationErrors) {
+        this(status, error, message, path, traceId);
+        this.validationErrors = validationErrors;
+    }
+
 }
