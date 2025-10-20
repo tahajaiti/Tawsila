@@ -1,6 +1,4 @@
 databaseChangeLog:
-  - changeSet:
-      id: 0
-      author: admin
-      changes:
-        -
+  - include:
+      file: changelogs/vehicle-changelog.yaml
+      relativeToChangelogFile: true
