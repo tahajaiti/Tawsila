@@ -17,4 +17,20 @@ public enum VehicleType {
         this.maxVolumeM3 = maxVolumeM3;
         this.maxDeliveries = maxDeliveries;
     }
+
+
+    /**
+     * Check if the vehicle type can handle the given weight, volume, and number of deliveries.
+     * @param weightKg weight in kilograms
+     * @param volumeM3 volume in cubic meters
+     * @param deliveries number of deliveries
+     * @return true if the vehicle type can handle the given parameters, false otherwise.
+     */
+    public boolean canHandle(double weightKg, double volumeM3, int deliveries) {
+        return weightKg <= maxWeightKg && volumeM3 <= maxVolumeM3 && deliveries <= maxDeliveries;
+    }
+
+    public boolean canHandle(double weightKg, double volumeM3) {
+        return weightKg <= maxWeightKg && volumeM3 <= maxVolumeM3;
+    }
 }
