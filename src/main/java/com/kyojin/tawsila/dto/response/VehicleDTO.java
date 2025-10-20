@@ -1,4 +1,4 @@
-package com.kyojin.tawsila.dto;
+package com.kyojin.tawsila.dto.response;
 
 import com.kyojin.tawsila.enums.VehicleType;
 import lombok.AllArgsConstructor;
