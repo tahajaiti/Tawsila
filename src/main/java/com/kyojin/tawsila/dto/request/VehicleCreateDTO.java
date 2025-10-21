@@ -1,6 +1,7 @@
 package com.kyojin.tawsila.dto.request;
 
 import com.kyojin.tawsila.enums.VehicleType;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,5 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VehicleCreateDTO {
-    private VehicleType type;
+
+    @NotNull(message = "Vehicle type is required")
+    private String type;
 }

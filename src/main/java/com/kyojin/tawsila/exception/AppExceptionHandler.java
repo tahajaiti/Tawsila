@@ -1,9 +1,11 @@
 package com.kyojin.tawsila.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -55,6 +57,25 @@ public class AppExceptionHandler {
                 request.getRequestURI(),
                 traceId,
                 validationErrors
+        );
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleJsonParseError(HttpMessageNotReadableException ex, HttpServletRequest request) {
+        String traceId = genId();
+        log.error("Trace ID: {}, Exception: {}, Message: {}, Request URI: {}",
+                traceId, ex.getClass().getSimpleName(), ex.getMessage(), request.getRequestURI(), ex);
+
+        String message = ex.getCause() instanceof InvalidFormatException ? ex.getCause().getMessage() : "Malformed JSON";
+
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                message,
+                request.getRequestURI(),
+                traceId
         );
 
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);

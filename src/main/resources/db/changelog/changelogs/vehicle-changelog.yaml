@@ -24,7 +24,7 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: max_volume_m3
+                  name: max_volumem3
                   type: DOUBLE
                   constraints:
                     nullable: false

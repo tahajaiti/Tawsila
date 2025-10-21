@@ -13,7 +13,7 @@ import lombok.Setter;
 public class VehicleDTO {
 
     private Long id;
-    private VehicleType type;
+    private String type;
     private double maxWeightKg;
     private double maxVolumeM3;
     private int maxDeliveries;
