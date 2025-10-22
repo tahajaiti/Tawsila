@@ -2,3 +2,6 @@ databaseChangeLog:
   - include:
       file: changelogs/vehicle-changelog.yaml
       relativeToChangelogFile: true
+  - include:
+        file: changelogs/delivery-changelog.yaml
+        relativeToChangelogFile: true
