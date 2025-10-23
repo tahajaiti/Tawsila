@@ -1,7 +1,6 @@
 package com.kyojin.tawsila.service;
 
-import com.kyojin.tawsila.dto.request.VehicleCreateDTO;
-import com.kyojin.tawsila.dto.response.VehicleDTO;
+import com.kyojin.tawsila.dto.VehicleDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,10 +14,10 @@ public interface VehicleService {
     /**
      * Create a new vehicle.
      *
-     * @param createDTO the DTO containing vehicle data
+     * @param dto the DTO containing vehicle data
      * @return the created VehicleDTO
      */
-    VehicleDTO createVehicle(VehicleCreateDTO createDTO);
+    VehicleDTO createVehicle(VehicleDTO dto);
 
     /**
      * Get a vehicle by its ID.

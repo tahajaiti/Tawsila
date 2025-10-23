@@ -1,7 +1,6 @@
 package com.kyojin.tawsila.service.impl;
 
-import com.kyojin.tawsila.dto.request.VehicleCreateDTO;
-import com.kyojin.tawsila.dto.response.VehicleDTO;
+import com.kyojin.tawsila.dto.VehicleDTO;
 import com.kyojin.tawsila.enums.VehicleType;
 import com.kyojin.tawsila.exception.NotFoundException;
 import com.kyojin.tawsila.mapper.VehicleMapper;
@@ -23,12 +22,12 @@ public class VehicleServiceImpl implements VehicleService {
         this.vehicleMapper = vehicleMapper;
     }
 
-    public VehicleDTO createVehicle(VehicleCreateDTO dto) {
+    public VehicleDTO createVehicle(VehicleDTO dto) {
         VehicleType vehicleType = ParseUtil.parseVehicleType(dto.getType());
 
         dto.setType(vehicleType.name());
 
-        var vehicle = vehicleMapper.fromRequest(dto);
+        var vehicle = vehicleMapper.toEntity(dto);
         var savedVehicle = vehicleRepository.save(vehicle);
         return vehicleMapper.toDTO(savedVehicle);
     }

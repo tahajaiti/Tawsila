@@ -1,10 +1,8 @@
 package com.kyojin.tawsila.controller;
 
-import com.kyojin.tawsila.dto.request.VehicleCreateDTO;
-import com.kyojin.tawsila.dto.response.VehicleDTO;
+import com.kyojin.tawsila.dto.VehicleDTO;
 import com.kyojin.tawsila.service.VehicleService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,8 +20,8 @@ public class VehicleController {
     }
 
     @PostMapping
-    public ResponseEntity<VehicleDTO> createVehicle(@Valid @RequestBody VehicleCreateDTO vehicleCreateDTO) {
-        VehicleDTO created = vehicleService.createVehicle(vehicleCreateDTO);
+    public ResponseEntity<VehicleDTO> createVehicle(@Valid @RequestBody VehicleDTO vehicleDTO) {
+        VehicleDTO created = vehicleService.createVehicle(vehicleDTO);
         return ResponseEntity.ok(created);
     }
 
