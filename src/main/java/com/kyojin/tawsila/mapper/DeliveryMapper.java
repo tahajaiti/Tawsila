@@ -10,6 +10,7 @@ import org.mapstruct.MappingTarget;
 public interface DeliveryMapper {
     DeliveryDTO toDTO(Delivery delivery);
     Delivery toEntity(DeliveryDTO deliveryDTO);
+    void updateEntityFromDTO(DeliveryDTO deliveryDTO, @MappingTarget Delivery delivery);
 
     @AfterMapping
     default void initDelivery(@MappingTarget Delivery delivery) {
