@@ -10,8 +10,8 @@ import java.util.Optional;
 
 public class DeliveryServiceImpl implements DeliveryService {
 
-    private DeliveryRepository deliveryRepository;
-    private DeliveryMapper deliveryMapper;
+    private final DeliveryRepository deliveryRepository;
+    private final DeliveryMapper deliveryMapper;
 
     public DeliveryServiceImpl(DeliveryRepository deliveryRepository, DeliveryMapper deliveryMapper) {
         this.deliveryRepository = deliveryRepository;
