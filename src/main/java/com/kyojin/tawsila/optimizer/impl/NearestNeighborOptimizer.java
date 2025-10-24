@@ -46,7 +46,7 @@ public class NearestNeighborOptimizer implements TourOptimizer {
 
             optimized.add(nearestDelivery);
             notVisited.remove(nearestDelivery);
-            
+
             // update current position to the last added delivery
             currentLat = nearestDelivery.getLatitude();
             currentLon = nearestDelivery.getLongitude();

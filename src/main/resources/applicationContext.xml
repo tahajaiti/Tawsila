@@ -38,5 +38,6 @@
     </bean>
 
 
+    <bean id="nearestNeighborOptimizer" class="com.kyojin.tawsila.optimizer.impl.NearestNeighborOptimizer"/>
 
 </beans>
