@@ -2,9 +2,12 @@ package com.kyojin.tawsila.service.impl;
 
 import com.kyojin.tawsila.dto.TourDTO;
 import com.kyojin.tawsila.entity.Tour;
+import com.kyojin.tawsila.entity.Warehouse;
+import com.kyojin.tawsila.exception.NotFoundException;
 import com.kyojin.tawsila.mapper.TourMapper;
 import com.kyojin.tawsila.repository.TourRepository;
 import com.kyojin.tawsila.service.TourService;
+import com.kyojin.tawsila.util.DistanceCalculator;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,10 +16,12 @@ public class TourServiceImpl implements TourService {
 
     private final TourMapper tourMapper;
     private final TourRepository tourRepository;
+    private final Warehouse warehouse;
 
-    public TourServiceImpl(TourMapper tourMapper, TourRepository tourRepository) {
+    public TourServiceImpl(TourMapper tourMapper, TourRepository tourRepository, Warehouse warehouse) {
         this.tourMapper = tourMapper;
         this.tourRepository = tourRepository;
+        this.warehouse = warehouse;
     }
 
     @Override
@@ -44,7 +49,7 @@ public class TourServiceImpl implements TourService {
     @Override
     public TourDTO updateTour(Long id, TourDTO dto) {
         var tour = tourRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tour not found with id: " + id));
+                .orElseThrow(() -> new NotFoundException("Tour not found with id: " + id));
 
         tourMapper.updateEntityFromDTO(dto, tour);
 
@@ -55,9 +60,54 @@ public class TourServiceImpl implements TourService {
     @Override
     public void deleteTour(Long id) {
         tourRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tour not found with id: " + id));
+                .orElseThrow(() -> new NotFoundException("Tour not found with id: " + id));
 
         tourRepository.deleteById(id);
+    }
+
+    @Override
+    public double getTotalDistance(Long tourId) {
+        var tour = tourRepository.findById(tourId)
+                .orElseThrow(() -> new NotFoundException("Tour not found with id: " + tourId));
+
+        var deliveries = tour.getDeliveries();
+
+        if (deliveries == null || deliveries.isEmpty()) {
+            return 0.0;
+        }
+
+        // sum of the distances
+        double totalDistance = 0.0;
+
+        // storing the previous distances
+        double prevLat = warehouse.getLatitude();
+        double prevLon = warehouse.getLongitude();
+
+
+        // calculate distance from warehouse to first delivery
+        for (var delivery : deliveries) {
+            totalDistance += DistanceCalculator.calculateDistance(
+                    warehouse.getLatitude(),
+                    warehouse.getLongitude(),
+                    delivery.getLatitude(),
+                    delivery.getLongitude()
+            );
+
+            // update previous location to current delivery
+            prevLat = delivery.getLatitude();
+            prevLon = delivery.getLongitude();
+        }
+
+
+        // marking the final distance to the warehouse
+        totalDistance += DistanceCalculator.calculateDistance(
+                prevLat,
+                prevLon,
+                warehouse.getLatitude(),
+                warehouse.getLongitude()
+        );
+
+        return totalDistance;
     }
 
 
