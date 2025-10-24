@@ -15,7 +15,14 @@
 
 
     <!-- ============== BEANs ============== -->
-
+    <bean id="warehouse" class="com.kyojin.tawsila.entity.Warehouse">
+        <property name="address" value="Darbida"/>
+        <property name="latitude" value="33.5731"/>
+        <property name="longitude" value="-7.5898"/>
+        <property name="openTime" value="06:00"/>
+        <property name="closeTime" value="22:00"/>
+    </bean>
+    
     <bean id="vehicleMapper" class="com.kyojin.tawsila.mapper.VehicleMapperImpl" />
     <bean id="deliveryMapper" class="com.kyojin.tawsila.mapper.DeliveryMapperImpl" />
 
@@ -27,6 +34,9 @@
     <bean id="deliveryService" class="com.kyojin.tawsila.service.impl.DeliveryServiceImpl" >
         <constructor-arg ref="deliveryRepository"/>
         <constructor-arg ref="deliveryMapper" />
+        <constructor-arg ref="tourRepository"/>
     </bean>
+
+
 
 </beans>
