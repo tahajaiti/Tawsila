@@ -1,6 +1,7 @@
 package com.kyojin.tawsila.service.impl;
 
 import com.kyojin.tawsila.dto.TourDTO;
+import com.kyojin.tawsila.entity.Delivery;
 import com.kyojin.tawsila.entity.Tour;
 import com.kyojin.tawsila.entity.Warehouse;
 import com.kyojin.tawsila.exception.NotFoundException;
@@ -8,7 +9,9 @@ import com.kyojin.tawsila.mapper.TourMapper;
 import com.kyojin.tawsila.repository.TourRepository;
 import com.kyojin.tawsila.service.TourService;
 import com.kyojin.tawsila.util.DistanceCalculator;
+import com.kyojin.tawsila.util.TourValidator;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +30,8 @@ public class TourServiceImpl implements TourService {
     @Override
     public TourDTO createTour(TourDTO dto) {
         Tour tour = tourMapper.toEntity(dto);
+
+        TourValidator.validateCapactity(tour);
 
         var savedTour = tourRepository.save(tour);
 
@@ -53,6 +58,8 @@ public class TourServiceImpl implements TourService {
 
         tourMapper.updateEntityFromDTO(dto, tour);
 
+        TourValidator.validateCapactity(tour);
+
         var updatedTour = tourRepository.save(tour);
         return tourMapper.toDTO(updatedTour);
     }
@@ -75,6 +82,9 @@ public class TourServiceImpl implements TourService {
         if (deliveries == null || deliveries.isEmpty()) {
             return 0.0;
         }
+
+        // sorting deliveries by id to have a consistent order
+        deliveries.sort(Comparator.comparing(Delivery::getId));
 
         // sum of the distances
         double totalDistance = 0.0;
