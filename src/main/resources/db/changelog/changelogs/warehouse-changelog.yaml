@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 0
+      id: create-table-wareshouses
       author: admin
       changes:
         - createTable:
