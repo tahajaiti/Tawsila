@@ -7,9 +7,13 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
+import java.time.LocalDate;
+
 @Mapper(componentModel = "spring")
 public interface DeliveryMapper {
+
     DeliveryDTO toDTO(Delivery delivery);
+
     Delivery toEntity(DeliveryDTO deliveryDTO);
 
     @Mapping(target = "id", ignore = true)
@@ -19,6 +23,17 @@ public interface DeliveryMapper {
     default void initDelivery(@MappingTarget Delivery delivery) {
         if (delivery.getStatus() == null) {
             delivery.setStatus(com.kyojin.tawsila.enums.DeliveryStatus.PENDING);
+        }
+    }
+
+    @AfterMapping
+    default void mapTourEmbedded(Delivery delivery, @MappingTarget DeliveryDTO dto) {
+        if (delivery.getTour() != null) {
+            DeliveryDTO.TourEmbeddedDTO tourDTO = new DeliveryDTO.TourEmbeddedDTO();
+            tourDTO.setId(delivery.getTour().getId());
+            tourDTO.setDate(delivery.getTour().getDate() != null ? LocalDate.parse(delivery.getTour().getDate().toString()) : null);
+            tourDTO.setVehicleId(delivery.getTour().getVehicle() != null ? delivery.getTour().getVehicle().getId() : null);
+            dto.setTour(tourDTO);
         }
     }
 }

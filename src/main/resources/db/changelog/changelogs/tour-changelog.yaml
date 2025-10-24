@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: create-table-tours
-      author: cuh
+      author: admin
       changes:
         - createTable:
             tableName: tours
@@ -35,7 +35,7 @@ databaseChangeLog:
 
   - changeSet:
       id: create-index-tours-vehicle
-      author: cuh
+      author: admin
       changes:
         - createIndex:
             indexName: idx_tours_vehicle
