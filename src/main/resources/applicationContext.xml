@@ -22,7 +22,7 @@
         <property name="openTime" value="06:00"/>
         <property name="closeTime" value="22:00"/>
     </bean>
-    
+
     <bean id="vehicleMapper" class="com.kyojin.tawsila.mapper.VehicleMapperImpl" />
     <bean id="deliveryMapper" class="com.kyojin.tawsila.mapper.DeliveryMapperImpl" />
 
