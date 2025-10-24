@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 1
+      id: create-table-deliveries
       author: admin
       changes:
         - createTable:
@@ -41,3 +41,16 @@ databaseChangeLog:
                   type: VARCHAR(20)
                   constraints:
                     nullable: false
+              - column:
+                  name: tour_id
+                  type: BIGINT
+              - column:
+                  name: delivery_order
+                  type: INT
+
+        - addForeignKeyConstraint:
+            baseTableName: deliveries
+            baseColumnNames: tour_id
+            referencedTableName: tours
+            referencedColumnNames: id
+            constraintName: fk_deliveries_tour

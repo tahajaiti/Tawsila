@@ -42,6 +42,11 @@ public class Delivery {
     @Column(nullable = false)
     private DeliveryStatus status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tour_id")
+    private Tour tour;
+
+
     @PrePersist
     protected void onCreate() {
         if (status == null) status = DeliveryStatus.PENDING;
