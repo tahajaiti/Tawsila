@@ -1,6 +1,7 @@
 package com.kyojin.tawsila.controller;
 
 import com.kyojin.tawsila.dto.DeliveryDTO;
+import com.kyojin.tawsila.dto.DeliveryStatusDTO;
 import com.kyojin.tawsila.service.DeliveryService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,7 @@ public class DeliveryController {
     }
 
     @PutMapping("/{id}" )
-    public ResponseEntity<DeliveryDTO> updateDelivery(@PathVariable Long id, @RequestBody DeliveryDTO dto) {
+    public ResponseEntity<DeliveryDTO> updateDelivery(@PathVariable Long id, @Valid @RequestBody DeliveryDTO dto) {
         var updatedDelivery = deliveryService.updateDelivery(id, dto);
         return ResponseEntity.ok(updatedDelivery);
     }
@@ -49,4 +50,9 @@ public class DeliveryController {
     }
 
 
+    @PatchMapping("/{id}/status" )
+    public ResponseEntity<DeliveryDTO> updateDeliveryStatus(@PathVariable Long id, @Valid @RequestBody DeliveryStatusDTO dto) {
+        var updatedDelivery = deliveryService.updateDeliveryStatus(id, dto.getStatus());
+        return ResponseEntity.ok(updatedDelivery);
+    }
 }

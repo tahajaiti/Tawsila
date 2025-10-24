@@ -4,13 +4,16 @@ import com.kyojin.tawsila.dto.DeliveryDTO;
 import com.kyojin.tawsila.entity.Delivery;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface DeliveryMapper {
     DeliveryDTO toDTO(Delivery delivery);
     Delivery toEntity(DeliveryDTO deliveryDTO);
-    void updateEntityFromDTO(DeliveryDTO deliveryDTO, @MappingTarget Delivery delivery);
+
+    @Mapping(target = "id", ignore = true)
+    void updateEntityFromDTO(DeliveryDTO dto, @MappingTarget Delivery entity);
 
     @AfterMapping
     default void initDelivery(@MappingTarget Delivery delivery) {

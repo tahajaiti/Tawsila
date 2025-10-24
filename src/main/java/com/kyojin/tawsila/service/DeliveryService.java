@@ -49,4 +49,14 @@ public interface DeliveryService {
      * @param id the ID of the delivery to delete
      */
     void deleteDelivery(Long id);
+
+
+    /**
+     * Update the status of an existing delivery.
+     *
+     * @param deliveryId the ID of the delivery to update
+     * @param status     the new status of the delivery
+     * @return the updated DeliveryDTO
+     */
+    DeliveryDTO updateDeliveryStatus(Long deliveryId, String status);
 }

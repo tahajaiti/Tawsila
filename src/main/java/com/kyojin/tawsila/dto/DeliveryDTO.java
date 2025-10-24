@@ -18,7 +18,7 @@ public class DeliveryDTO {
     private Double latitude;
     @NotNull(message = "Longitude is required")
     private Double longitude;
-    @NotNull(message = "Wight in kg is required")
+    @NotNull(message = "Weight in kg is required")
     private Double weightKg;
     @NotNull(message = "Volume in m3 is required")
     private Double volumeM3;

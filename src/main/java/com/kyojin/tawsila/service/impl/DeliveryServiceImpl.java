@@ -1,6 +1,9 @@
 package com.kyojin.tawsila.service.impl;
 
 import com.kyojin.tawsila.dto.DeliveryDTO;
+import com.kyojin.tawsila.enums.DeliveryStatus;
+import com.kyojin.tawsila.exception.BadRequestException;
+import com.kyojin.tawsila.exception.NotFoundException;
 import com.kyojin.tawsila.mapper.DeliveryMapper;
 import com.kyojin.tawsila.repository.DeliveryRepository;
 import com.kyojin.tawsila.service.DeliveryService;
@@ -41,7 +44,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Override
     public DeliveryDTO updateDelivery(Long deliveryId, DeliveryDTO deliveryDetails) {
         var deliveryEntity = deliveryRepository.findById(deliveryId)
-                .orElseThrow(() -> new RuntimeException("Delivery not found with id: " + deliveryId));
+                .orElseThrow(() -> new NotFoundException("Delivery not found with id: " + deliveryId));
 
         deliveryMapper.updateEntityFromDTO(deliveryDetails, deliveryEntity);
 
@@ -52,9 +55,25 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Override
     public void deleteDelivery(Long id) {
         deliveryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Delivery not found with id: " + id));
+                .orElseThrow(() -> new NotFoundException("Delivery not found with id: " + id));
 
         deliveryRepository.deleteById(id);
+    }
+
+
+    @Override
+    public DeliveryDTO updateDeliveryStatus(Long deliveryId, String status) {
+        var deliveryEntity = deliveryRepository.findById(deliveryId)
+                .orElseThrow(() -> new NotFoundException("Delivery not found with id: " + deliveryId));
+
+        try {
+            deliveryEntity.setStatus(DeliveryStatus.valueOf(status.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new BadRequestException("Invalid status value: " + status);
+        }
+
+        var updatedEntity = deliveryRepository.save(deliveryEntity);
+        return deliveryMapper.toDTO(updatedEntity);
     }
 
 }
