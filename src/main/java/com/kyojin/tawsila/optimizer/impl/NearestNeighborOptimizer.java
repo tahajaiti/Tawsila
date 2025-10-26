@@ -1,57 +1,123 @@
 package com.kyojin.tawsila.optimizer.impl;
 
 import com.kyojin.tawsila.entity.Delivery;
+import com.kyojin.tawsila.entity.Vehicle;
 import com.kyojin.tawsila.entity.Warehouse;
+import com.kyojin.tawsila.enums.VehicleType;
 import com.kyojin.tawsila.optimizer.TourOptimizer;
 import com.kyojin.tawsila.util.DistanceCalculator;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class NearestNeighborOptimizer implements TourOptimizer {
+
+    @Getter
+    @Setter
+    @AllArgsConstructor
+    public static class State {
+        double currentLat;
+        double currentLon;
+        double currentWeight;
+        double currentVolume;
+        int currentStops;
+
+        public void update(Delivery delivery) {
+            this.currentLat = delivery.getLatitude();
+            this.currentLon = delivery.getLongitude();
+            this.currentWeight += delivery.getWeightKg();
+            this.currentVolume += delivery.getVolumeM3();
+            this.currentStops++;
+        }
+    }
+
     @Override
-    public List<Delivery> calculateOptimalTour(Warehouse warehouse, List<Delivery> deliveries) {
+    public List<Delivery> calculateOptimalTour(Warehouse warehouse, List<Delivery> deliveries, Vehicle vehicle) {
         if (deliveries == null || deliveries.isEmpty()) return new ArrayList<>();
 
-        // two lists to keep track of optimized and not visited deliveries
-        List<Delivery> optimized = new ArrayList<>();
+        VehicleType vType = vehicle.getType();
+
         List<Delivery> notVisited = new ArrayList<>(deliveries);
 
-        // we start from the warehouse position
-        double currentLat = warehouse.getLatitude();
-        double currentLon = warehouse.getLongitude();
+        // we fill notVisited with a list of deliveries that can be handled by the vehicle
+        // doing sanity checks
+        for (Delivery del : notVisited) {
+           if (vType.canHandle(del.getWeightKg(), del.getVolumeM3())) {
+            notVisited.add(del);
+           }
+        }
 
-        while (!notVisited.isEmpty()) {
-            Delivery nearestDelivery = notVisited.get(0);
+        // the final optimized route
+        List<Delivery> optimized = new ArrayList<>();
 
-            // we get the minimum distance delivery from the current position
-            double minDistance = DistanceCalculator.calculateDistance(
-                    currentLat, currentLon,
-                    nearestDelivery.getLatitude(), nearestDelivery.getLongitude()
-            );
+        // initial state
+        State state = new State(
+                warehouse.getLatitude(),
+                warehouse.getLongitude(),
+                0,
+                0,
+                0
+        );
 
-            for (Delivery delivery: notVisited) {
-                // calculate distance from current position to delivery
-                double dist = DistanceCalculator.calculateDistance(
-                        currentLat, currentLon,
-                        delivery.getLatitude(), delivery.getLongitude()
-                );
+        // we loop until we have visited all deliveries, or reach the vehicle's max deliveries
+        while (!notVisited.isEmpty() && state.getCurrentStops() < vehicle.getMaxDeliveries()) {
+            Delivery nearest = findNearestDelivery(notVisited, state, vehicle);
 
-                // update nearest delivery if found a closer one
-                if (dist < minDistance) {
-                    minDistance = dist;
-                    nearestDelivery = delivery;
-                }
-            }
+            if (nearest == null) break; // no more deliveries that fit capacity
 
-            optimized.add(nearestDelivery);
-            notVisited.remove(nearestDelivery);
-
-            // update current position to the last added delivery
-            currentLat = nearestDelivery.getLatitude();
-            currentLon = nearestDelivery.getLongitude();
+            optimized.add(nearest);
+            notVisited.remove(nearest);
+            state.update(nearest);
         }
 
         return optimized;
+
+    }
+
+    /**
+     * Finds the nearest delivery from the current state that can fit in the vehicle.
+     * @param deliveries list of deliveries to consider
+     * @param state current state of the vehicle
+     * @param vehicle the vehicle being used
+     * @return the nearest delivery that fits, or null if none found
+     */
+    private Delivery findNearestDelivery(List<Delivery> deliveries, State state, Vehicle vehicle) {
+        Delivery nearest = null;
+        double minDistance = Double.MAX_VALUE; // define a large number minimum distance
+
+        for (Delivery del : deliveries) {
+            if (!canFit(del, vehicle, state)) continue;
+
+            // calculate distance from current position to delivery
+            double dist = DistanceCalculator.calculateDistance(
+                    state.getCurrentLat(), state.getCurrentLon(),
+                    del.getLatitude(), del.getLongitude()
+            );
+
+            // we check if it is closer than the current minimum
+            // and update nearest if so
+            if (dist < minDistance) {
+                minDistance = dist;
+                nearest = del;
+            }
+        }
+
+        return nearest;
+    }
+
+
+    /**
+     * Checks if a delivery can fit in the vehicle given the current state.
+     * @param delivery the delivery to check
+     * @param vehicle the vehicle being used
+     * @param state the current state of the vehicle
+     * @return true if the delivery can fit, false otherwise
+     */
+    private boolean canFit(Delivery delivery, Vehicle vehicle, State state) {
+        return (state.getCurrentWeight() + delivery.getWeightKg() <= vehicle.getMaxWeightKg())
+                && (state.getCurrentVolume() + delivery.getVolumeM3() <= vehicle.getMaxVolumeM3());
     }
 }
