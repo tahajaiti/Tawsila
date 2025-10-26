@@ -44,7 +44,7 @@ public class NearestNeighborOptimizer implements TourOptimizer {
 
         // we fill notVisited with a list of deliveries that can be handled by the vehicle
         // doing sanity checks
-        for (Delivery del : notVisited) {
+        for (Delivery del : deliveries) {
            if (vType.canHandle(del.getWeightKg(), del.getVolumeM3())) {
             notVisited.add(del);
            }
@@ -117,7 +117,12 @@ public class NearestNeighborOptimizer implements TourOptimizer {
      * @return true if the delivery can fit, false otherwise
      */
     private boolean canFit(Delivery delivery, Vehicle vehicle, State state) {
-        return (state.getCurrentWeight() + delivery.getWeightKg() <= vehicle.getMaxWeightKg())
-                && (state.getCurrentVolume() + delivery.getVolumeM3() <= vehicle.getMaxVolumeM3());
+        // calculate new state if we add this delivery
+        double newWeight = state.getCurrentWeight() + delivery.getWeightKg();
+        double newVolume = state.getCurrentVolume() + delivery.getVolumeM3();
+        int newStops = state.getCurrentStops() + 1;
+
+        // we call the vehicle type handle method to check if it fits
+        return vehicle.getType().canHandle(newWeight, newVolume, newStops);
     }
 }
