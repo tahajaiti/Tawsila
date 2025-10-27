@@ -1,5 +1,6 @@
 package com.kyojin.tawsila.util;
 
+import com.kyojin.tawsila.enums.AlgorithmType;
 import com.kyojin.tawsila.enums.VehicleType;
 import com.kyojin.tawsila.exception.BadRequestException;
 
@@ -20,6 +21,19 @@ public class ParseUtil {
                                 Arrays.stream(VehicleType.values())
                                         .map(Enum::name)
                                         .collect(Collectors.joining(", "))
+                ));
+    }
+    
+    public static <T extends Enum<T>> T parseType(String type, Class<T> enumClass) {
+        return Arrays.stream(enumClass.getEnumConstants())
+                .filter(e -> e.name().equalsIgnoreCase(type))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException(
+                        "Invalid type: " + type +
+                                ". Accepted: " + String.join(", ",
+                                Arrays.stream(enumClass.getEnumConstants())
+                                        .map(Enum::name)
+                                        .toList())
                 ));
     }
 }

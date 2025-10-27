@@ -73,6 +73,12 @@ public class TourServiceImpl implements TourService {
     }
 
     @Override
+    public TourDTO getOptimizedTour(Long tourId, String algorithm) {
+
+    }
+
+
+    @Override
     public double getTotalDistance(Long tourId) {
         var tour = tourRepository.findById(tourId)
                 .orElseThrow(() -> new NotFoundException("Tour not found with id: " + tourId));
