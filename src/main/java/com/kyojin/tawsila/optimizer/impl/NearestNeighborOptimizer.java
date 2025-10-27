@@ -50,6 +50,10 @@ public class NearestNeighborOptimizer implements TourOptimizer {
            }
         }
 
+        // edge cases
+        if (notVisited.isEmpty()) return new ArrayList<>();
+        if (notVisited.size() == 1) return notVisited;
+
         // the final optimized route
         List<Delivery> optimized = new ArrayList<>();
 
