@@ -25,6 +25,7 @@
 
     <bean id="vehicleMapper" class="com.kyojin.tawsila.mapper.VehicleMapperImpl" />
     <bean id="deliveryMapper" class="com.kyojin.tawsila.mapper.DeliveryMapperImpl" />
+    <bean id="tourMapper" class="com.kyojin.tawsila.mapper.TourMapperImpl" />
 
     <bean id="vehicleService" class="com.kyojin.tawsila.service.impl.VehicleServiceImpl">
         <constructor-arg ref="vehicleRepository" />
