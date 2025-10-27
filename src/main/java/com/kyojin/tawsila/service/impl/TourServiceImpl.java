@@ -6,26 +6,26 @@ import com.kyojin.tawsila.entity.Tour;
 import com.kyojin.tawsila.entity.Warehouse;
 import com.kyojin.tawsila.exception.NotFoundException;
 import com.kyojin.tawsila.mapper.TourMapper;
+import com.kyojin.tawsila.optimizer.TourOptimizer;
 import com.kyojin.tawsila.repository.TourRepository;
 import com.kyojin.tawsila.service.TourService;
 import com.kyojin.tawsila.util.DistanceCalculator;
 import com.kyojin.tawsila.util.TourValidator;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class TourServiceImpl implements TourService {
 
     private final TourMapper tourMapper;
     private final TourRepository tourRepository;
     private final Warehouse warehouse;
-
-    public TourServiceImpl(TourMapper tourMapper, TourRepository tourRepository, Warehouse warehouse) {
-        this.tourMapper = tourMapper;
-        this.tourRepository = tourRepository;
-        this.warehouse = warehouse;
-    }
+    private final TourOptimizer nearestNeighborOptimizer;
+    private final TourOptimizer clarkeWrightOptimizer;
 
     @Override
     public TourDTO createTour(TourDTO dto) {

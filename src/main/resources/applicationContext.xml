@@ -37,6 +37,13 @@
         <constructor-arg ref="tourRepository"/>
     </bean>
 
+    <bean id="tourService" class="com.kyojin.tawsila.service.impl.TourServiceImpl">
+        <constructor-arg ref="tourMapper"/>
+        <constructor-arg ref="tourRepository"/>
+        <constructor-arg ref="warehouse"/>
+        <constructor-arg ref="nearestNeighborOptimizer"/>
+        <constructor-arg ref="clarkeWrightOptimizer"/>
+    </bean>
 
     <bean id="nearestNeighborOptimizer" class="com.kyojin.tawsila.optimizer.impl.NearestNeighborOptimizer"/>
     <bean id="clarkeWrightOptimizer" class="com.kyojin.tawsila.optimizer.impl.ClarkeWrightOptimizer"/>
