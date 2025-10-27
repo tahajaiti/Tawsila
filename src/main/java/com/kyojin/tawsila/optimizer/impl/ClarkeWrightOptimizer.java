@@ -11,8 +11,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.*;
 
 public class ClarkeWrightOptimizer implements TourOptimizer {
-
-
+    
     @RequiredArgsConstructor
     private static class Saving implements Comparable<Saving> {
         final Delivery from;
@@ -42,8 +41,6 @@ public class ClarkeWrightOptimizer implements TourOptimizer {
         int getSize()  { return deliveries.size(); }
     }
 
-
-
     public List<Delivery> calculateOptimalTour(Warehouse warehouse, List<Delivery> deliveries, Vehicle vehicle) {
         if (deliveries == null || deliveries.isEmpty()) return new ArrayList<>();
 
@@ -62,91 +59,159 @@ public class ClarkeWrightOptimizer implements TourOptimizer {
         if (notVisited.isEmpty()) return new ArrayList<>();
         if (notVisited.size() == 1) return notVisited;
 
-        // an array to hold all savings
+        // calculate all possible savings
+        List<Saving> savings = calculateSavings(warehouse, notVisited);
+
+        // each delivery starts as its own subtour
+        Map<Delivery, SubTour> tourMap = initSubTours(notVisited);
+
+        // we merge subtours based on savings and vehicle constraints
+        merge(savings, tourMap, vehicleType);
+
+        return findBestTour(tourMap);
+    }
+
+
+    /**
+     * Filters deliveries that can be handled by the vehicle type.
+     * @param deliveries List of all deliveries.
+     * @param vType Vehicle type.
+     * @return List of eligible deliveries.
+     */
+    private List<Delivery> findDeliveries(List<Delivery> deliveries, VehicleType vType) {
+        List<Delivery> eligible = new ArrayList<>();
+        for (Delivery del : deliveries) {
+            // constraint check
+            if (vType.canHandle(del.getWeightKg(), del.getVolumeM3())) {
+                eligible.add(del);
+            }
+        }
+        return eligible;
+    }
+
+
+    /**
+     * Calculates savings for all pairs of deliveries.
+     * @param warehouse The warehouse (depot).
+     * @param deliveries List of deliveries.
+     * @return List of savings.
+     */
+    private List<Saving> calculateSavings(Warehouse warehouse, List<Delivery> deliveries) {
         List<Saving> savings = new ArrayList<>();
+        for (int i = 0; i < deliveries.size(); i++) {
+            for (int j = i + 1; j < deliveries.size(); j++) {
+                Delivery del1 = deliveries.get(i);
+                Delivery del2 = deliveries.get(j);
 
-        // we loop through every pair of deliveries (i, j)
-        for (int i = 0; i < notVisited.size(); i++) {
-            for (int j = i + 1; j < notVisited.size(); j++) {
-                Delivery del1 = notVisited.get(i);
-                Delivery del2 = notVisited.get(j);
-
-                // implemnting the formula
                 // saving(i,j) = (dist(warehouse, i) + dist(warehouse, j)) - dist(i, j)
                 double savingAmount = dist(warehouse, del1) + dist(warehouse, del2) - dist(del1, del2);
 
-                // we take only the positive ones
                 if (savingAmount > 0) {
                     savings.add(new Saving(del1, del2, savingAmount));
                 }
             }
         }
-
         // sort from high to low
         Collections.sort(savings);
+        return savings;
+    }
 
-        // initialize each delivery as its own subtour
+    /**
+     * Initializes each delivery as its own subtour.
+     * @param deliveries List of deliveries.
+     * @return Map of delivery to its subtour.
+     */
+    private Map<Delivery, SubTour> initSubTours(List<Delivery> deliveries) {
         Map<Delivery, SubTour> tourMap = new HashMap<>();
-        for (Delivery del : notVisited) {
+        for (Delivery del : deliveries) {
             tourMap.put(del, new SubTour(del));
         }
+        return tourMap;
+    }
 
-        // loop through savings from highest to lowest
+
+    /**
+     * Merges subtours based on savings and vehicle constraints.
+     * @param savings List of savings.
+     * @param tourMap Map of delivery to its subtour.
+     * @param vType Vehicle type.
+     */
+    private void merge(List<Saving> savings, Map<Delivery, SubTour> tourMap, VehicleType vType) {
         for (Saving saving : savings) {
-            Delivery del1 = saving.from;
-            Delivery del2 = saving.to;
+            SubTour tour1 = tourMap.get(saving.from);
+            SubTour tour2 = tourMap.get(saving.to);
 
-            // get the tours for each delivery
-            SubTour tour1 = tourMap.get(del1);
-            SubTour tour2 = tourMap.get(del2);
-
+            // sanity check if they are already merged
             if (tour1 == tour2) {
-                // both deliveries are already in the same subtour
                 continue;
             }
 
-            // check if merging the tours would break the vehicle constraints
+            // checks
             double combinedWeight = tour1.currentWeight + tour2.currentWeight;
             double combinedVolume = tour1.currentVolume + tour2.currentVolume;
             int combinedStops = tour1.getSize() + tour2.getSize();
 
-            if (!vehicleType.canHandle(combinedWeight, combinedVolume, combinedStops)) {
-                continue; // cannot merge due to constraints
+            if (!vType.canHandle(combinedWeight, combinedVolume, combinedStops)) {
+                continue;
             }
 
-            // check if del1 is at the end of tour1 and del2 is at the start of tour2 (or vice versa)
-            // this ensures we maintain a valid route as we can only link the start/end
-
-            if (tour1.getLast().equals(del1) && tour2.getFirst().equals(del2)) {
-                mergeTours(tourMap, tour1, tour2);
-            } else if (tour2.getLast().equals(del2) && tour1.getFirst().equals(del1)) {
-                // merge tour1 into tour2
-                mergeTours(tourMap, tour2, tour1);
-            } else if (tour1.getFirst().equals(del1) && tour2.getLast().equals(del2)) {
-                // reverse tour1 and merge
-                Collections.reverse(tour1.deliveries);
-                mergeTours(tourMap, tour1, tour2);
-            } else if (tour2.getFirst().equals(del2) && tour1.getLast().equals(del1)) {
-                // reverse tour2 and merge
-                Collections.reverse(tour2.deliveries);
-                mergeTours(tourMap, tour1, tour2);
-            }
+            tryMerge(saving, tour1, tour2, tourMap);
         }
+    }
 
-        // after merging, we find the tour with most delivires
+    /**
+     * Attempts to merge two subtours based on the saving.
+     * @param saving The saving object.
+     * @param tour1 First subtour.
+     * @param tour2 Second subtour.
+     * @param tourMap Map of delivery to its subtour.
+     * @return True if merged, false otherwise.
+     */
+    private boolean tryMerge(Saving saving, SubTour tour1, SubTour tour2, Map<Delivery, SubTour> tourMap) {
+        Delivery del1 = saving.from;
+        Delivery del2 = saving.to;
 
+        // case 1 (end-start)
+        if (tour1.getLast().equals(del1) && tour2.getFirst().equals(del2)) {
+            mergeTours(tourMap, tour1, tour2); // merges tour2 into tour1
+        }
+        // case 2 (start-end)
+        else if (tour1.getFirst().equals(del1) && tour2.getLast().equals(del2)) {
+            mergeTours(tourMap, tour2, tour1);
+        }
+        // case 3 (end-end)
+        else if (tour1.getLast().equals(del1) && tour2.getLast().equals(del2)) {
+            Collections.reverse(tour2.deliveries);// reverse tour2
+            mergeTours(tourMap, tour1, tour2);
+        }
+        // case 4 (start-start)
+        else if (tour1.getFirst().equals(del1) && tour2.getFirst().equals(del2)) {
+            Collections.reverse(tour1.deliveries);
+            mergeTours(tourMap, tour1, tour2);
+        } else {
+            return false; // cannot merge
+        }
+        return true;
+    }
+
+    /**
+     * Finds the best tour (with most stops) from the subtours.
+     * @param tourMap Map of delivery to its subtour.
+     * @return List of deliveries in the best tour.
+     */
+    private List<Delivery> findBestTour(Map<Delivery, SubTour> tourMap) {
         SubTour bestTour = null;
         int maxStops = 0;
 
-        Set<SubTour> finalTour = new HashSet<>(tourMap.values());
+        // we use a set to avoid duplicates
+        Set<SubTour> finalTours = new HashSet<>(tourMap.values());
 
-        for (SubTour tour : finalTour) {
+        for (SubTour tour : finalTours) {
             if (tour.getSize() > maxStops) {
                 maxStops = tour.getSize();
                 bestTour = tour;
             }
         }
-
 
         return (bestTour != null) ? bestTour.deliveries : new ArrayList<>();
     }
@@ -171,6 +236,9 @@ public class ClarkeWrightOptimizer implements TourOptimizer {
         );
     }
 
+    /**
+     * Merges tour2 into tour1 and updates the tourMap accordingly.
+     */
     private void mergeTours(Map<Delivery, SubTour> tourMap, SubTour tour1, SubTour tour2) {
         // add all deliveries from tour2 to tour1
         tour1.deliveries.addAll(tour2.deliveries);
