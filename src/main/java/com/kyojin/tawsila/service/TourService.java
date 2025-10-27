@@ -42,15 +42,14 @@ public interface TourService {
      */
     void deleteTour(Long id);
 
+    /**
+     * Get optimized tour using specified algorithm
+     * @param tourId ID of the tour
+     * @param algorithm Algorithm to use for optimization (e.g., "NEAREST_NEIGHBOR")
+     * @return TourDTO with optimized route
+     */
+    TourDTO getOptimizedTour(Long tourId, String algorithm);
 
-//    /**
-//     * Get optimized tour using specified algorithm
-//     * @param tourId ID of the tour
-//     * @param algorithm Algorithm to use for optimization (e.g., "NEAREST_NEIGHBOR")
-//     * @return DTO list representing the optimized tour
-//     */
-//    List<DeliveryDTO> getOptimizedTour(Long tourId, String algorithm);
-//
     /**
      * Calculate total distance of the tour
      * @param tourId ID of the tour

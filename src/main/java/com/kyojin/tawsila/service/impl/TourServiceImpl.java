@@ -4,12 +4,14 @@ import com.kyojin.tawsila.dto.TourDTO;
 import com.kyojin.tawsila.entity.Delivery;
 import com.kyojin.tawsila.entity.Tour;
 import com.kyojin.tawsila.entity.Warehouse;
+import com.kyojin.tawsila.enums.AlgorithmType;
 import com.kyojin.tawsila.exception.NotFoundException;
 import com.kyojin.tawsila.mapper.TourMapper;
 import com.kyojin.tawsila.optimizer.TourOptimizer;
 import com.kyojin.tawsila.repository.TourRepository;
 import com.kyojin.tawsila.service.TourService;
 import com.kyojin.tawsila.util.DistanceCalculator;
+import com.kyojin.tawsila.util.ParseUtil;
 import com.kyojin.tawsila.util.TourValidator;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -74,7 +76,29 @@ public class TourServiceImpl implements TourService {
 
     @Override
     public TourDTO getOptimizedTour(Long tourId, String algorithm) {
+        AlgorithmType type = ParseUtil.parseType(algorithm, AlgorithmType.class);
 
+        var tour = tourRepository.findById(tourId)
+                .orElseThrow(() -> new NotFoundException("Tour not found with id: " + tourId));
+
+        var deliveries = tour.getDeliveries();
+        var vehicle = tour.getVehicle();
+
+        if (deliveries == null || deliveries.isEmpty()) {
+            return tourMapper.toDTO(tour);
+        }
+
+        TourOptimizer optimizer = switch (type) {
+            case NEAREST_NEIGHBOR -> nearestNeighborOptimizer;
+            case CLARKE_WRIGHT -> clarkeWrightOptimizer;
+        };
+
+        var optimizedDeliveries = optimizer.calculateOptimalTour(warehouse, deliveries, vehicle);
+
+        tour.setDeliveries(optimizedDeliveries);
+        var optimizedTour = tourRepository.save(tour);
+
+        return tourMapper.toDTO(optimizedTour);
     }
 
 
