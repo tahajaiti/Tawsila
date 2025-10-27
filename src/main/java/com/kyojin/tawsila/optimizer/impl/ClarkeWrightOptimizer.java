@@ -11,7 +11,7 @@ import lombok.RequiredArgsConstructor;
 import java.util.*;
 
 public class ClarkeWrightOptimizer implements TourOptimizer {
-    
+
     @RequiredArgsConstructor
     private static class Saving implements Comparable<Saving> {
         final Delivery from;

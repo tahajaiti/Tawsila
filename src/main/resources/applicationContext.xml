@@ -39,5 +39,6 @@
 
 
     <bean id="nearestNeighborOptimizer" class="com.kyojin.tawsila.optimizer.impl.NearestNeighborOptimizer"/>
+    <bean id="clarkeWrightOptimizer" class="com.kyojin.tawsila.optimizer.impl.ClarkeWrightOptimizer"/>
 
 </beans>
