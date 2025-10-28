@@ -81,11 +81,29 @@ public class TourServiceImpl implements TourService {
 
         tourMapper.updateEntityFromDTO(dto, tour);
 
+        if (dto.getVehicle() != null && dto.getVehicle().getId() != null) {
+            var vehicle = vehicleRepository.findById(dto.getVehicle().getId())
+                    .orElseThrow(() -> new BadRequestException("Invalid vehicle ID"));
+            tour.setVehicle(vehicle);
+        } else {
+            tour.setVehicle(null);
+        }
+
+        if (dto.getDeliveries() != null) {
+            if (tour.getDeliveries() != null) {
+                tour.getDeliveries().forEach(d -> d.setTour(null));
+            }
+
+            var updatedDeliveries = findAndLinkDeliveries(dto.getDeliveries(), tour);
+            tour.setDeliveries(updatedDeliveries);
+        }
+
         TourValidator.validateCapactity(tour);
 
         var updatedTour = tourRepository.save(tour);
         return tourMapper.toDTO(updatedTour);
     }
+
 
     @Override
     @Transactional
