@@ -1,5 +1,11 @@
 package com.kyojin.tawsila.service.impl;
 
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.kyojin.tawsila.dto.DeliveryDTO;
 import com.kyojin.tawsila.dto.TourDTO;
 import com.kyojin.tawsila.dto.TourDistanceDTO;
@@ -18,14 +24,9 @@ import com.kyojin.tawsila.service.TourService;
 import com.kyojin.tawsila.util.DistanceCalculator;
 import com.kyojin.tawsila.util.ParseUtil;
 import com.kyojin.tawsila.util.TourValidator;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class TourServiceImpl implements TourService {
@@ -116,6 +117,7 @@ public class TourServiceImpl implements TourService {
     }
 
     @Override
+    @Transactional
     public TourDTO getOptimizedTour(Long tourId, String algorithm) {
         AlgorithmType type = ParseUtil.parseType(algorithm, AlgorithmType.class);
 
@@ -159,8 +161,6 @@ public class TourServiceImpl implements TourService {
             return tourMapper.toDistanceDTO(0.0);
         }
 
-        // sorting deliveries by id to have a consistent order
-        deliveries.sort(Comparator.comparing(Delivery::getId));
 
         // sum of the distances
         double totalDistance = 0.0;
@@ -173,8 +173,8 @@ public class TourServiceImpl implements TourService {
         // calculate distance from warehouse to first delivery
         for (var delivery : deliveries) {
             totalDistance += DistanceCalculator.calculateDistance(
-                    warehouse.getLatitude(),
-                    warehouse.getLongitude(),
+                    prevLat,
+                    prevLon.getLongitude(),
                     delivery.getLatitude(),
                     delivery.getLongitude()
             );

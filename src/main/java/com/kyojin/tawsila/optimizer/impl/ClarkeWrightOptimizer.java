@@ -48,7 +48,7 @@ public class ClarkeWrightOptimizer implements TourOptimizer {
 
         VehicleType vehicleType = vehicle.getType();
 
-        List<Delivery> notVisited = new ArrayList<>();
+        List<Delivery> notVisited = findDeliveries(deliveries, vehicleType);
 
         // same method from before to filter deliveries that can be handled by the vehicle
         for (Delivery del : deliveries) {
