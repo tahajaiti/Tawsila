@@ -19,8 +19,9 @@
         <property name="address" value="Darbida"/>
         <property name="latitude" value="33.5731"/>
         <property name="longitude" value="-7.5898"/>
-        <property name="openTime" value="06:00"/>
-        <property name="closeTime" value="22:00"/>
+
+        <property name="openTime" value="#{T(java.time.LocalTime).parse('06:00')}"/>
+        <property name="closeTime" value="#{T(java.time.LocalTime).parse('22:00')}"/>
     </bean>
 
     <bean id="vehicleMapper" class="com.kyojin.tawsila.mapper.VehicleMapperImpl" />

@@ -21,7 +21,9 @@ public class ClarkeWrightOptimizer implements TourOptimizer {
         @Override
         public int compareTo(Saving other) {
             // we sort in descending order of savings
-            return Double.compare(other.amount, this.amount);
+            int cmp = Double.compare(other.amount, this.amount);
+            if (cmp == 0) return Long.compare(this.from.getId(), other.from.getId());
+            return cmp;
         }
     }
 
@@ -46,7 +48,7 @@ public class ClarkeWrightOptimizer implements TourOptimizer {
 
         VehicleType vehicleType = vehicle.getType();
 
-        List<Delivery> notVisited = new ArrayList<>(deliveries);
+        List<Delivery> notVisited = new ArrayList<>();
 
         // same method from before to filter deliveries that can be handled by the vehicle
         for (Delivery del : deliveries) {

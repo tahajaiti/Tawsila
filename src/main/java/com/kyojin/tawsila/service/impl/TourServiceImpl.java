@@ -135,7 +135,8 @@ public class TourServiceImpl implements TourService {
 
         var optimizedDeliveries = optimizer.calculateOptimalTour(warehouse, deliveries, vehicle);
 
-        tour.setDeliveries(optimizedDeliveries);
+        tour.getDeliveries().clear();
+        tour.getDeliveries().addAll(optimizedDeliveries);
         var optimizedTour = tourRepository.save(tour);
 
         return tourMapper.toDTO(optimizedTour);
@@ -143,6 +144,7 @@ public class TourServiceImpl implements TourService {
 
 
     @Override
+    @Transactional
     public double getTotalDistance(Long tourId) {
         var tour = tourRepository.findById(tourId)
                 .orElseThrow(() -> new NotFoundException("Tour not found with id: " + tourId));
