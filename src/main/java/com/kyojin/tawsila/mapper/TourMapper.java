@@ -11,6 +11,7 @@ public interface TourMapper {
 
     TourDTO toDTO(Tour tour);
 
+    @Mapping(target = "deliveries", ignore = true)
     Tour toEntity(TourDTO dto);
 
     @Mapping(target = "id", ignore = true)

@@ -14,6 +14,7 @@ public interface DeliveryMapper {
 
     DeliveryDTO toDTO(Delivery delivery);
 
+    @Mapping(target = "tour", ignore = true)
     Delivery toEntity(DeliveryDTO deliveryDTO);
 
     @Mapping(target = "id", ignore = true)

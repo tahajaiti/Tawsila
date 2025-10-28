@@ -1,37 +1,57 @@
 package com.kyojin.tawsila.service.impl;
 
+import com.kyojin.tawsila.dto.DeliveryDTO;
 import com.kyojin.tawsila.dto.TourDTO;
 import com.kyojin.tawsila.entity.Delivery;
 import com.kyojin.tawsila.entity.Tour;
 import com.kyojin.tawsila.entity.Warehouse;
 import com.kyojin.tawsila.enums.AlgorithmType;
+import com.kyojin.tawsila.exception.BadRequestException;
 import com.kyojin.tawsila.exception.NotFoundException;
 import com.kyojin.tawsila.mapper.TourMapper;
 import com.kyojin.tawsila.optimizer.TourOptimizer;
+import com.kyojin.tawsila.repository.DeliveryRepository;
 import com.kyojin.tawsila.repository.TourRepository;
+import com.kyojin.tawsila.repository.VehicleRepository;
 import com.kyojin.tawsila.service.TourService;
 import com.kyojin.tawsila.util.DistanceCalculator;
 import com.kyojin.tawsila.util.ParseUtil;
 import com.kyojin.tawsila.util.TourValidator;
-import lombok.AllArgsConstructor;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 public class TourServiceImpl implements TourService {
 
     private final TourMapper tourMapper;
     private final TourRepository tourRepository;
+    private final VehicleRepository vehicleRepository;
+    private final DeliveryRepository deliveryRepository;
     private final Warehouse warehouse;
     private final TourOptimizer nearestNeighborOptimizer;
     private final TourOptimizer clarkeWrightOptimizer;
 
     @Override
+    @Transactional
     public TourDTO createTour(TourDTO dto) {
         Tour tour = tourMapper.toEntity(dto);
+
+        if (dto.getVehicle() != null && dto.getVehicle().getId() != null) {
+            var vehicle = vehicleRepository.findById(dto.getVehicle().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid vehicle ID"));
+            tour.setVehicle(vehicle);
+        }
+
+        if (dto.getDeliveries() != null && !dto.getDeliveries().isEmpty()) {
+            List<Delivery> deliveries = findAndLinkDeliveries(dto.getDeliveries(), tour);
+            tour.setDeliveries(deliveries);
+        }
 
         TourValidator.validateCapactity(tour);
 
@@ -54,6 +74,7 @@ public class TourServiceImpl implements TourService {
     }
 
     @Override
+    @Transactional
     public TourDTO updateTour(Long id, TourDTO dto) {
         var tour = tourRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Tour not found with id: " + id));
@@ -67,6 +88,7 @@ public class TourServiceImpl implements TourService {
     }
 
     @Override
+    @Transactional
     public void deleteTour(Long id) {
         tourRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Tour not found with id: " + id));
@@ -151,4 +173,33 @@ public class TourServiceImpl implements TourService {
     }
 
 
+    private List<Delivery> findAndLinkDeliveries(List<DeliveryDTO> deliveryDTOs, Tour tour) {
+        Set<Long> deliveryIds = deliveryDTOs.stream()
+                .map(DeliveryDTO::getId)
+                .collect(Collectors.toSet());
+
+        List<Delivery> deliveries = deliveryRepository.findAllById(deliveryIds);
+
+        if (deliveries.size() != deliveryIds.size()) {
+            Set<Long> foundIds = deliveries.stream()
+                    .map(Delivery::getId)
+                    .collect(Collectors.toSet());
+            Long missingId = deliveryIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .findFirst()
+                    .orElse(null);
+            throw new NotFoundException("Invalid delivery ID: " + missingId);
+        }
+
+        for (Delivery delivery : deliveries) {
+            if (delivery.getTour() != null) {
+                throw new BadRequestException("Delivery " + delivery.getId()
+                        + " is already assigned to tour " + delivery.getTour().getId());
+            }
+            delivery.setTour(tour);
+        }
+
+        return deliveries;
+
+    }
 }
