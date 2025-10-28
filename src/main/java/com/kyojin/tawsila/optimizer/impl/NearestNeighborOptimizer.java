@@ -40,7 +40,7 @@ public class NearestNeighborOptimizer implements TourOptimizer {
 
         VehicleType vType = vehicle.getType();
 
-        List<Delivery> notVisited = new ArrayList<>(deliveries);
+        List<Delivery> notVisited = new ArrayList<>();
 
         // we fill notVisited with a list of deliveries that can be handled by the vehicle
         // doing sanity checks
