@@ -5,6 +5,7 @@
 Tawsila is a Spring Boot-based delivery route optimization system designed to help logistics companies reduce fuel costs and improve efficiency. The application manages a heterogeneous vehicle fleet and automatically optimizes delivery routes using advanced algorithms.
 
 The system compares two optimization algorithms:
+
 - **Nearest Neighbor**: Fast but generates longer routes (~180km average for 100 deliveries)
 - **Clarke & Wright**: Slower but significantly reduces distances (up to 28% improvement)
 
@@ -20,6 +21,7 @@ The system compares two optimization algorithms:
 ## Technology Stack
 
 ### Core Technologies
+
 - **Java 17+**
 - **Spring Boot** - Main framework
 - **Spring Data JPA** - Data persistence
@@ -27,11 +29,13 @@ The system compares two optimization algorithms:
 - **Maven** - Dependency management
 
 ### Spring Configuration
+
 - XML-based dependency injection (`applicationContext.xml`)
 - Property-based configuration (`application.properties`)
 - Manual bean configuration (no `@Autowired`, `@Component`, `@Service` annotations)
 
 ### Dependencies
+
 - **Liquibase** - Database migration management
 - **Lombok** - Boilerplate code reduction
 - **Spring Boot DevTools** - Development tools
@@ -40,6 +44,7 @@ The system compares two optimization algorithms:
 - **SLF4J** - Logging framework
 
 ### Development Tools
+
 - **Git** - Version control (branch: `test/nearest`)
 - **JIRA** - Project management (SCRUM)
 - **SonarLint** - Code quality analysis
@@ -100,14 +105,20 @@ src/
         └── applicationContext-test.xml      # Test configuration
 ```
 
+## Class Diagram
+
+![Class Diagram](docs/class-diagram.png)
+
 ## Business Domain
 
 ### Entities
 
 **Vehicle**: Represents delivery vehicles with different types and capacities
+
 - Types: BIKE (50kg, 0.5m³, 15 deliveries max), VAN (1000kg, 8m³, 50 deliveries max), TRUCK (5000kg, 40m³, 100 deliveries max)
 
 **Delivery**: Individual delivery with GPS coordinates, weight, volume, and optional time window
+
 - Statuses: PENDING → IN_TRANSIT → DELIVERED/FAILED
 
 **Tour**: Daily route assigned to a vehicle containing ordered deliveries
@@ -117,11 +128,13 @@ src/
 ### Optimization Algorithms
 
 **Nearest Neighbor**:
+
 - Greedy approach: always choose the closest unvisited delivery
 - Fast computation (~50ms for 100 deliveries)
 - Suboptimal routes
 
 **Clarke & Wright**:
+
 - Savings-based approach: merges routes that save the most distance
 - Formula: `Savings(i,j) = Distance(Warehouse,i) + Distance(Warehouse,j) - Distance(i,j)`
 - Better optimization with acceptable computation time (~200ms)
@@ -129,17 +142,20 @@ src/
 ## Installation & Setup
 
 ### Prerequisites
+
 - Java 17 or higher
 - Maven 3.x
 - Git
 
 ### Clone Repository
+
 ```bash
 git clone git@github.com:tahajaiti/Tawsila.git
 cd Tawsila
 ```
 
 ### Run Application
+
 ```bash
 // with mvn wrapper
 
@@ -151,11 +167,14 @@ The application will start on the port configured in `application.properties` (d
 ## Configuration
 
 ### Database (H2)
+
 The H2 console is accessible at: `http://localhost:8080/h2-console`
+
 - JDBC URL: configured in `application.properties`
 - Database migrations managed by Liquibase
 
 ### Spring Beans
+
 All dependency injection is configured in `applicationContext.xml`. The optimizer strategy pattern allows switching between algorithms without code modification (Open/Closed Principle).
 
 ## API Documentation
@@ -163,6 +182,7 @@ All dependency injection is configured in `applicationContext.xml`. The optimize
 Access Swagger UI at: `http://localhost:8080/api/v1/swagger.html`
 
 ### Main Endpoints
+
 - `GET/POST/PUT/DELETE /api/deliveries` - Delivery management
 - `GET/POST/PUT/DELETE /api/tours` - Tour management
 - `GET/POST/PUT/DELETE /api/vehicles` - Vehicle management
@@ -172,11 +192,13 @@ Access Swagger UI at: `http://localhost:8080/api/v1/swagger.html`
 ## Testing
 
 ### Run Unit Tests
+
 ```bash
 mvn test
 ```
 
 ### API Testing
+
 Import the Postman collection (to be provided) or use Swagger UI for manual testing.
 
 ## Design Patterns
@@ -190,6 +212,7 @@ Import the Postman collection (to be provided) or use Swagger UI for manual test
 ## Development Workflow
 
 ### JIRA Integration
+
 Project managed using SCRUM methodology with JIRA board.
 
 ## Key Java APIs Used

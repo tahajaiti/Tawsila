@@ -136,8 +136,11 @@ public class TourServiceImpl implements TourService {
 
         var optimizedDeliveries = optimizer.calculateOptimalTour(warehouse, deliveries, vehicle);
 
-        tour.getDeliveries().clear();
-        tour.getDeliveries().addAll(optimizedDeliveries);
+//        tour.getDeliveries().clear();
+//        tour.getDeliveries().addAll(optimizedDeliveries);
+
+        tour.getDeliveries().sort(Comparator.comparingInt(optimizedDeliveries::indexOf));
+
         var optimizedTour = tourRepository.save(tour);
 
         return tourMapper.toDTO(optimizedTour);
