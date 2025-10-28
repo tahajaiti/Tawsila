@@ -12,17 +12,17 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @ControllerAdvice
 public class AppExceptionHandler {
 
-
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(NotFoundException ex, HttpServletRequest request) {
         String traceId = genId();
-        log.error("Trace ID: {}, Exception: {}, Message: {}, Request URI: {}",
-                traceId, ex.getClass().getSimpleName(), ex.getMessage(), request.getRequestURI(), ex);
+        log.warn("Trace ID: {}, Exception: {}, Message: {}, Request URI: {}",
+                traceId, ex.getClass().getSimpleName(), ex.getMessage(), request.getRequestURI());
 
         ErrorResponse err = new ErrorResponse(
                 HttpStatus.NOT_FOUND.value(),
@@ -31,19 +31,32 @@ public class AppExceptionHandler {
                 request.getRequestURI(),
                 traceId
         );
-
         return new ResponseEntity<>(err, HttpStatus.NOT_FOUND);
     }
 
-
-    @ExceptionHandler({BadRequestException.class, MethodArgumentNotValidException.class})
+    /**
+     * Handles all "Bad Request" exceptions, including:
+     * - @Valid validation failures (MethodArgumentNotValidException)
+     * - Manual validation failures (BadRequestException)
+     * - Service-layer data errors (IllegalArgumentException, IllegalStateException)
+     */
+    @ExceptionHandler({
+            BadRequestException.class,
+            MethodArgumentNotValidException.class,
+            IllegalArgumentException.class,
+            IllegalStateException.class,
+            RuntimeException.class
+    })
     public ResponseEntity<ErrorResponse> handleBadRequest(Exception ex, HttpServletRequest request) {
         String traceId = genId();
-        log.error("Trace ID: {}, Exception: {}, Message: {}, Request URI: {}",
-                traceId, ex.getClass().getSimpleName(), ex.getMessage(), request.getRequestURI(), ex);
+        log.warn("Trace ID: {}, Exception: {}, Message: {}, Request URI: {}",
+                traceId, ex.getClass().getSimpleName(), ex.getMessage(), request.getRequestURI());
 
         List<String> validationErrors = null;
+        String message = ex.getMessage();
+
         if (ex instanceof MethodArgumentNotValidException e) {
+            message = "Validation failed";
             validationErrors = e.getBindingResult().getFieldErrors()
                     .stream()
                     .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
@@ -53,22 +66,34 @@ public class AppExceptionHandler {
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",
-                ex.getMessage(),
+                message,
                 request.getRequestURI(),
                 traceId,
                 validationErrors
         );
-
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Handles malformed JSON and gives a more specific error message.
+     */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleJsonParseError(HttpMessageNotReadableException ex, HttpServletRequest request) {
         String traceId = genId();
-        log.error("Trace ID: {}, Exception: {}, Message: {}, Request URI: {}",
-                traceId, ex.getClass().getSimpleName(), ex.getMessage(), request.getRequestURI(), ex);
+        log.warn("Trace ID: {}, JSON parse error: {}, Request URI: {}",
+                traceId, ex.getMessage(), request.getRequestURI());
 
-        String message = ex.getCause() instanceof InvalidFormatException ? ex.getCause().getMessage() : "Malformed JSON";
+        String message = "Malformed JSON request";
+
+        if (ex.getCause() instanceof InvalidFormatException ifx) {
+            String path = ifx.getPath().stream()
+                    .map(ref -> ref.getFieldName() != null ? ref.getFieldName() : "[" + ref.getIndex() + "]")
+                    .collect(Collectors.joining("."));
+            String expectedType = ifx.getTargetType() != null ? ifx.getTargetType().getSimpleName() : "Unknown";
+
+            message = String.format("Invalid format for field '%s'. Got '%s', expected %s",
+                    path, ifx.getValue(), expectedType);
+        }
 
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.BAD_REQUEST.value(),
@@ -77,20 +102,23 @@ public class AppExceptionHandler {
                 request.getRequestURI(),
                 traceId
         );
-
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * This is the catch-all for any unexpected errors.
+     * The message is deliberately generic to avoid leaking server details.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneric(Exception ex, HttpServletRequest request) {
         String traceId = genId();
-        log.error("Trace ID: {}, Exception: {}, Message: {}, Request URI: {}",
+        log.error("Trace ID: {}, Unhandled Exception: {}, Message: {}, Request URI: {}",
                 traceId, ex.getClass().getSimpleName(), ex.getMessage(), request.getRequestURI(), ex);
 
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 "Internal Server Error",
-                "Something went wrong",
+                "An unexpected internal error occurred. Please contact support with the trace ID.",
                 request.getRequestURI(),
                 traceId
         );
