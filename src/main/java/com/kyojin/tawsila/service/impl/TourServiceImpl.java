@@ -2,6 +2,7 @@ package com.kyojin.tawsila.service.impl;
 
 import com.kyojin.tawsila.dto.DeliveryDTO;
 import com.kyojin.tawsila.dto.TourDTO;
+import com.kyojin.tawsila.dto.TourDistanceDTO;
 import com.kyojin.tawsila.entity.Delivery;
 import com.kyojin.tawsila.entity.Tour;
 import com.kyojin.tawsila.entity.Warehouse;
@@ -145,14 +146,14 @@ public class TourServiceImpl implements TourService {
 
     @Override
     @Transactional
-    public double getTotalDistance(Long tourId) {
+    public TourDistanceDTO getTotalDistance(Long tourId) {
         var tour = tourRepository.findById(tourId)
                 .orElseThrow(() -> new NotFoundException("Tour not found with id: " + tourId));
 
         var deliveries = tour.getDeliveries();
 
         if (deliveries == null || deliveries.isEmpty()) {
-            return 0.0;
+            return tourMapper.toDistanceDTO(0.0);
         }
 
         // sorting deliveries by id to have a consistent order
@@ -189,7 +190,7 @@ public class TourServiceImpl implements TourService {
                 warehouse.getLongitude()
         );
 
-        return totalDistance;
+        return tourMapper.toDistanceDTO(totalDistance);
     }
 
 

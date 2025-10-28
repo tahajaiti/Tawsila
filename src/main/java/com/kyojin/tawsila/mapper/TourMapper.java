@@ -1,6 +1,7 @@
 package com.kyojin.tawsila.mapper;
 
 import com.kyojin.tawsila.dto.TourDTO;
+import com.kyojin.tawsila.dto.TourDistanceDTO;
 import com.kyojin.tawsila.entity.Tour;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -16,4 +17,6 @@ public interface TourMapper {
 
     @Mapping(target = "id", ignore = true)
     void updateEntityFromDTO(TourDTO dto, @MappingTarget Tour entity);
+
+    TourDistanceDTO toDistanceDTO(Double distance);
 }

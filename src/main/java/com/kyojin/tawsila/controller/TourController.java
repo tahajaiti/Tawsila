@@ -1,6 +1,7 @@
 package com.kyojin.tawsila.controller;
 
 import com.kyojin.tawsila.dto.TourDTO;
+import com.kyojin.tawsila.dto.TourDistanceDTO;
 import com.kyojin.tawsila.entity.Tour;
 import com.kyojin.tawsila.enums.AlgorithmType;
 import com.kyojin.tawsila.service.TourService;
@@ -58,8 +59,7 @@ public class TourController {
     }
 
     @GetMapping("/{id}/distance")
-    public ResponseEntity<Double> getTourDistance(@PathVariable Long id) {
-        double distance = tourService.getTotalDistance(id);
-        return ResponseEntity.ok(distance);
+    public ResponseEntity<TourDistanceDTO> getTourDistance(@PathVariable Long id) {
+        return ResponseEntity.ok(tourService.getTotalDistance(id));
     }
 }

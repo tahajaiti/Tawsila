@@ -2,6 +2,7 @@ package com.kyojin.tawsila.service;
 
 import com.kyojin.tawsila.dto.DeliveryDTO;
 import com.kyojin.tawsila.dto.TourDTO;
+import com.kyojin.tawsila.dto.TourDistanceDTO;
 
 import java.util.List;
 import java.util.Optional;
@@ -55,5 +56,5 @@ public interface TourService {
      * @param tourId ID of the tour
      * @return Total distance of the tour in kilometers
      */
-    double getTotalDistance(Long tourId);
+    TourDistanceDTO getTotalDistance(Long tourId);
 }
