@@ -2,6 +2,7 @@ package com.kyojin.tawsila.controller;
 
 import com.kyojin.tawsila.dto.TourDTO;
 import com.kyojin.tawsila.entity.Tour;
+import com.kyojin.tawsila.enums.AlgorithmType;
 import com.kyojin.tawsila.service.TourService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -49,4 +50,16 @@ public class TourController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{id}/optimize")
+    public ResponseEntity<TourDTO> optimizeTour(@PathVariable Long id,
+                                                @RequestParam(defaultValue = "NEAREST_NEIGHBOR") String algorithm) {
+        var optimizedTour = tourService.getOptimizedTour(id, algorithm);
+        return ResponseEntity.ok(optimizedTour);
+    }
+
+    @GetMapping("/{id}/distance")
+    public ResponseEntity<Double> getTourDistance(@PathVariable Long id) {
+        double distance = tourService.getTotalDistance(id);
+        return ResponseEntity.ok(distance);
+    }
 }
